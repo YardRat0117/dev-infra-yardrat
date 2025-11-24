@@ -1,5 +1,8 @@
 name: Build and Deploy Resume PDF
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ "main" ]
@@ -8,24 +11,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/xu-cheng/texlive-full:latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Env - Install TeXLive with XeLaTeX & Chinese support
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            texlive-xetex \
-            texlive-latex-extra \
-            texlive-fonts-extra \
-            texlive-lang-chinese \
-            latexmk
-
       - name: CI - Build PDF
         run: |
-          export TEXMFHOME=$PWD
           mkdir -p dist
           latexmk -xelatex -interaction=nonstopmode anomy-resume.tex
           mv anomy-resume.pdf dist/
@@ -36,4 +30,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: dist
+          force_orphan: true
           keep_files: true
